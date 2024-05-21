@@ -14,7 +14,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     };
 
     try {
-      const apiRes = await fetch(`${API_SERVER_URL}pr/knowledge`, {
+      const apiRes = await fetch(`${API_SERVER_URL}/pr/knowledge`, {
         method: 'POST',
         headers,
         body: JSON.stringify(req.body),

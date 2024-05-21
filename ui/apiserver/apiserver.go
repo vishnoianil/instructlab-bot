@@ -305,8 +305,8 @@ func (api *ApiServer) setupRoutes(apiUser, apiPass string) {
 	authorized.Use(AuthRequired(apiUser, apiPass))
 	authorized.GET("/jobs", api.getAllJobs)
 	authorized.POST("/chat", api.chatHandler)
-	authorized.POST("/pr/skill", api.skillPRHandler)
-	authorized.POST("/pr/knowledge", api.knowledgePRHandler)
+	authorized.POST("pr/skill", api.skillPRHandler)
+	authorized.POST("pr/knowledge", api.knowledgePRHandler)
 
 	api.router.GET("/", func(c *gin.Context) {
 		c.String(http.StatusOK, "IL Redis Queue")
