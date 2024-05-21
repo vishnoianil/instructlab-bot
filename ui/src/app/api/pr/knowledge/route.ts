@@ -1,38 +1,51 @@
 // pages/api/pr/knowledge.ts
 import type { NextApiRequest, NextApiResponse } from 'next';
+import '../../../../../envConfig';
 
 const API_SERVER_URL = process.env.IL_UI_API_SERVER_URL || 'http://localhost:3000';
 const USERNAME = process.env.IL_UI_API_SERVER_USERNAME || 'kitteh';
 const PASSWORD = process.env.IL_UI_API_SERVER_PASSWORD || 'floofykittens';
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method === 'POST') {
-    const auth = Buffer.from(`${USERNAME}:${PASSWORD}`).toString('base64');
-    const headers = {
-      'Content-Type': 'application/json',
-      Authorization: 'Basic ' + auth,
-    };
-
-    try {
-      const apiRes = await fetch(`${API_SERVER_URL}/pr/knowledge`, {
-        method: 'POST',
-        headers,
-        body: JSON.stringify(req.body),
-      });
-
-      if (!apiRes.ok) {
-        const errorResult = await apiRes.json();
-        throw new Error(`HTTP error! status: ${apiRes.status} - ${errorResult.error}`);
-      }
-
-      const result = await apiRes.json();
-      res.status(201).json(result);
-    } catch (error) {
-      console.error('Failed to post Knowledge PR:', error);
-      res.status(500).json({ error: 'Failed to post Knowledge PR' });
-    }
-  } else {
+export async function POST(req: NextApiRequest, res: NextApiResponse) {
+  if (req.method !== 'POST') {
     res.setHeader('Allow', ['POST']);
-    res.status(405).end(`Method ${req.method} Not Allowed`);
+    return res.status(405).end(`Method ${req.method} Not Allowed`);
+  }
+
+  console.log(`Received request: ${req.method} ${req.url}`);
+
+  const auth = Buffer.from(`${USERNAME}:${PASSWORD}`).toString('base64');
+  const headers = {
+    'Content-Type': 'application/json',
+    Authorization: 'Basic ' + auth,
+  };
+
+  try {
+    const apiRes = await fetch(`${API_SERVER_URL}/pr/knowledge`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(req.body),
+    });
+
+    if (!apiRes.ok) {
+      const errorText = await apiRes.text();
+      console.error(`HTTP error status: ${apiRes.status} - ${errorText}`);
+      throw new Error(`HTTP error status: ${apiRes.status} - ${errorText}`);
+    }
+
+    const text = await apiRes.text();
+
+    let result;
+    try {
+      result = JSON.parse(text);
+    } catch (e) {
+      console.error('Failed to parse JSON:', text);
+      throw new Error('Failed to parse JSON response');
+    }
+
+    res.status(201).json(result);
+  } catch (error) {
+    console.error('Failed to post Knowledge PR:', error);
+    res.status(500).json({ error: 'Failed to post Knowledge PR' });
   }
 }
